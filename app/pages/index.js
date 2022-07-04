@@ -3,11 +3,35 @@ import { Image, Link, useMutation, Routes } from "blitz"
 import Layout from "app/core/layouts/Layout"
 import { useCurrentUser } from "app/core/hooks/useCurrentUser"
 import logout from "app/auth/mutations/logout"
-import logo from "public/logo.png"
+import { MoralisProvider, useMoralis } from "react-moralis"
 /*
  * This file is just for a pleasant getting started page for your new app.
  * You can delete everything in here and start from scratch if you like.
  */
+
+const UserDapp = () => {
+  const { isAuthenticated, authenticate, user, logout } = useMoralis()
+  if (!isAuthenticated) {
+    return (
+      <button
+        onClick={() =>
+          authenticate({
+            type: "sol",
+            signingMessage: "REO needs you to sign in in order to validate ownership... whatevs...",
+          })
+        }
+      >
+        Auth
+      </button>
+    )
+  }
+  return (
+    <div>
+      <p>Welcome {user.get("username")}</p>
+      <button onClick={() => logout()}>Logout</button>
+    </div>
+  )
+}
 
 const UserInfo = () => {
   const currentUser = useCurrentUser()
@@ -53,9 +77,7 @@ const Home = () => {
   return (
     <div className="container">
       <main>
-        <div className="logo">
-          <Image src={logo} alt="blitzjs" />
-        </div>
+        <div className="logo">🏡</div>
         <p>
           <strong>Congrats!</strong> Your app is ready, including user sign-up and log-in.
         </p>
@@ -69,6 +91,13 @@ const Home = () => {
           <Suspense fallback="Loading...">
             <UserInfo />
           </Suspense>
+
+          <MoralisProvider
+            appId={process.env.NEXT_PUBLIC_APP_ID}
+            serverUrl={process.env.NEXT_PUBLIC_SERVER_URL}
+          >
+            <UserDapp />
+          </MoralisProvider>
         </div>
         <p>
           <strong>
